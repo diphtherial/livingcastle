@@ -51,8 +51,8 @@ public class LivingCastleMain extends ApplicationAdapter {
 
         if (player != null) {
             // have to map from tiled pixel coordinates into world coordinates
-            px = player.getX() * 2/16f;
-            py = player.getY() * 2/16f;
+            px = player.getX() * Constants.TILE_PIXEL_MAPPING;
+            py = player.getY() * Constants.TILE_PIXEL_MAPPING;
         }
 
         // create the player and adds them to the world

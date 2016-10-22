@@ -5,6 +5,9 @@ import com.artemis.ComponentMapper;
 import com.artemis.systems.IteratingSystem;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.maps.MapLayer;
+import com.badlogic.gdx.maps.MapObject;
+import com.badlogic.gdx.maps.objects.PolygonMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
@@ -47,6 +50,8 @@ public class BoxPhysicsSystem extends IteratingSystem {
 
         // adds the collision layer of the level as static collidable geometry
         addStaticTiles(level);
+        // adds in the collision_geom layer consisting of collidable polygons
+        addStaticGeometry(level);
     }
 
     @Override
@@ -225,5 +230,42 @@ public class BoxPhysicsSystem extends IteratingSystem {
         box.setAsBox(span.width/2f, span.height/2f);
         body.createFixture(box, 0f);
         box.dispose();
+    }
+
+    private void addStaticGeometry(Level level) {
+        // get the collision layer
+        MapLayer geom_collider = level.getMap().getLayers().get("collider_geom");
+
+        if (geom_collider == null)
+            return;
+
+        for (MapObject mo : geom_collider.getObjects()) {
+            if (mo instanceof PolygonMapObject) {
+                PolygonMapObject pmo = (PolygonMapObject)mo;
+
+                // create a body definition that specifies the position (shape comes later), then create a body from that
+                BodyDef bodydef = new BodyDef();
+                // trust whatever tiled is telling us, i guess?
+                bodydef.position.set(
+                        pmo.getPolygon().getX() * Constants.TILE_PIXEL_MAPPING,
+                        pmo.getPolygon().getY()* Constants.TILE_PIXEL_MAPPING
+                );
+                Body body = physWorld.createBody(bodydef);
+
+                // apparently all the vertices need to be scaled down
+                float[] tiled_vertices = pmo.getPolygon().getVertices();
+                float[] vertices = new float[tiled_vertices.length];
+
+                for (int i = 0; i < tiled_vertices.length; i++) {
+                    vertices[i] = tiled_vertices[i] * Constants.TILE_PIXEL_MAPPING;
+                }
+
+                // create a box that represents this span's shape and attach it to our body
+                PolygonShape poly = new PolygonShape();
+                poly.set(vertices);
+                body.createFixture(poly, 0f);
+                poly.dispose();
+            }
+        }
     }
 }
