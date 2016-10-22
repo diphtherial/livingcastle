@@ -9,11 +9,13 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.maps.tiled.objects.TiledMapTileMapObject;
+import com.escherial.livingcastle.structure.Constants;
 import com.escherial.livingcastle.structure.EntityFactory;
 import com.escherial.livingcastle.structure.Level;
 import com.escherial.livingcastle.systems.dynamics.ArcadePhysicsSystem;
 import com.escherial.livingcastle.systems.control.EntityObserverSystem;
 import com.escherial.livingcastle.systems.control.PlayerControlSystem;
+import com.escherial.livingcastle.systems.dynamics.BoxPhysicsSystem;
 import com.escherial.livingcastle.systems.rendering.BGLayerRenderSystem;
 import com.escherial.livingcastle.systems.rendering.EntityRenderSystem;
 import com.escherial.livingcastle.systems.rendering.FGLayerRenderSystem;
@@ -22,17 +24,16 @@ public class LivingCastleMain extends ApplicationAdapter {
     World world;
     private SpriteBatch batch;
     OrthographicCamera camera;
-    private ArcadePhysicsSystem physicsSystem;
+    private BoxPhysicsSystem physicsSystem;
 
     @Override
     public void create() {
         // we have to load the level first in order to parameterize the level layer rendering systems properly
         batch = new SpriteBatch();
-        camera = new OrthographicCamera();
-        camera.setToOrtho(false, Gdx.graphics.getWidth() / 2.0f, Gdx.graphics.getHeight() / 2.0f);
+        camera = new OrthographicCamera(Constants.VIEWPORT_WIDTH, Constants.VIEWPORT_HEIGHT);
         Level curLevel = new Level("levels/intro.tmx");
 
-        physicsSystem = new ArcadePhysicsSystem(curLevel, camera);
+        physicsSystem = new BoxPhysicsSystem(curLevel, camera);
         PlayerControlSystem pcontrol = new PlayerControlSystem();
         WorldConfiguration config = new WorldConfigurationBuilder()
                 .with(new EntityObserverSystem(camera), pcontrol, physicsSystem)
@@ -49,8 +50,9 @@ public class LivingCastleMain extends ApplicationAdapter {
         float px = 0, py = 0;
 
         if (player != null) {
-            px = player.getX();
-            py = player.getY();
+            // have to map from tiled pixel coordinates into world coordinates
+            px = player.getX() * 2/16f;
+            py = player.getY() * 2/16f;
         }
 
         // create the player and adds them to the world
@@ -77,6 +79,12 @@ public class LivingCastleMain extends ApplicationAdapter {
         // have the physics system render whatever HUDy stuff it wants now
         physicsSystem.debugRender();
     }
+
+//    @Override
+//    public void resize(int width, int height) {
+//        camera.viewportHeight = (Constants.VIEWPORT_WIDTH / width) * height;
+//        camera.update();
+//    }
 
     @Override
     public void dispose() {

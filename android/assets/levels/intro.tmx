@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="left-up" width="20" height="20" tilewidth="16" tileheight="16" nextobjectid="4">
+<map version="1.0" orientation="orthogonal" renderorder="left-up" width="20" height="30" tilewidth="16" tileheight="16" nextobjectid="4">
  <tileset firstgid="1" name="Tanks" tilewidth="16" tileheight="16" tilecount="576" columns="24">
   <image source="../sheets/sheet.png" trans="201429" width="384" height="384"/>
  </tileset>
@@ -11,32 +11,32 @@
    <image width="16" height="16" source="../sheets/collider.png"/>
   </tile>
  </tileset>
- <layer name="background" width="20" height="20">
+ <layer name="background" width="20" height="30">
   <data encoding="base64" compression="zlib">
-   eJxzZGJgcBzFo3gUj+JRPIpJxAANuGix
+   eJxzZGJgcBzFo3gUj+JRPIpH8SgexVTDAH9vnQk=
   </data>
  </layer>
- <layer name="tile" width="20" height="20">
+ <layer name="tile" width="20" height="30">
   <data encoding="base64" compression="zlib">
-   eJxjYBh6gAmIHwOxIiMqzUymWZJ4MClmIpvFiQWTaiayOxTR5BTR5NWAYWAHxSpArMpImXnEACk080BWckJpZPOkiTQP2UxFHDQpZsGAEQ7zjMkwCwYUcdCj5o2ahwwUGCB5QhEHrUCieTJALI8Hy5LhRnzmEQIAlaYPIA==
+   eJztk1EKwjAQRKf2q0dQK+6CegBtf73/PbyIKyZ0XZLSTX4sdGAYSMhLJiHA+rQTv8Tc/GZbyNrP2MPUrC5hL1Ofg80cm/mb3MEz+CK+NnW8JToY3mfLLqTmHRfyNJMz6WFF3TO8RwErijO58TaeFuH7JziT5OT14vOMTwVnjGuHkKMa84ow9YPJ2r4wWds3Za8IU98h5Ij/7JvieUVYz/umeF4R6vq+AU6RFxM=
   </data>
  </layer>
- <layer name="deco_bg" width="20" height="20">
+ <layer name="deco_bg" width="20" height="30">
   <data encoding="base64" compression="zlib">
-   eJxjYBgFAw0yGSGYEMiBqskmQi0xgNrmjTQw2ONjpJgH049uXg4Z5oLyIT7ziMmnIwkAAMGQCvw=
+   eJxjYBgFAw0yGSGYEMiBqskmQi0xgNrmjTQw2ONjpJgH049uXg4Z5oLyIT7ziMmnowACKIkHepg32MFgD79R8wgDANb0EcQ=
   </data>
  </layer>
  <objectgroup name="entities">
   <object id="3" name="player" type="player" gid="385" x="96" y="32" width="16" height="16"/>
  </objectgroup>
- <layer name="deco_fg" width="20" height="20">
+ <layer name="deco_fg" width="20" height="30">
   <data encoding="base64" compression="zlib">
-   eJxjYBgFAwU0GAfaBaNgFIyCUUA+AADJowAq
+   eJxjYBgFAwU0GAfaBaNgFIyCUTAKRsEooAUAAEzyACo=
   </data>
  </layer>
- <layer name="collider" width="20" height="20" opacity="0.25">
+ <layer name="collider" width="20" height="30" visible="0" opacity="0.25">
   <data encoding="base64" compression="zlib">
-   eJxjYBh6wIkJN6amWaSaSYxZpJiJTw85dpBi3kD4l1x/UWImuQCmF50eNW/UPHRzBnt6psQ8AJeMH50=
+   eJxjYBh6wIkJN6amWaSaSYxZpJiJTw85dpBi3kD4l1x/UWImuQCmF50eNW/UPHRzBnt6RtaLTFPqNmzmUWImNdyH7hZqxgU29w0m/1LDvFH/YhfHBQB3LS8F
   </data>
  </layer>
 </map>

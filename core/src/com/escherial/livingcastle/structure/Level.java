@@ -11,15 +11,15 @@ import java.util.Arrays;
 import static com.escherial.livingcastle.structure.Tools.range;
 
 public class Level {
-    public static final int TILEW = 16;
+    public static final int TILEW = 2;
 
     protected final TiledMap map;
-    private final int mapWidth;
-    private final int mapHeight;
-    private final int tilePixelWidth;
-    private final int tilePixelHeight;
-    private final int mapPixelWidth;
-    private final int mapPixelHeight;
+    public final int mapWidth;
+    public final int mapHeight;
+    public final int tilePixelWidth;
+    public final int tilePixelHeight;
+    public final int mapPixelWidth;
+    public final int mapPixelHeight;
     protected int[] bg_layers;
     protected int[] fg_layers;
     protected int entityLayerID;

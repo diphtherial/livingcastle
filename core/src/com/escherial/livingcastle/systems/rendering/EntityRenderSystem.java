@@ -24,6 +24,6 @@ public class EntityRenderSystem extends IteratingSystem {
     protected void process(int e) {
         Sprited re = mSprited.get(e);
         Position p = mPosition.get(e);
-        batch.draw(re.img, p.pos.x, p.pos.y);
+        batch.draw(re.img, p.pos.x - re.offx, p.pos.y - re.offy, p.width, p.height);
     }
 }

@@ -16,8 +16,6 @@ import com.escherial.livingcastle.components.Physical;
 import com.escherial.livingcastle.components.Position;
 import com.escherial.livingcastle.structure.Level;
 
-import java.util.ArrayList;
-
 import static com.escherial.livingcastle.structure.Level.TILEW;
 
 public class ArcadePhysicsSystem extends BasePhysicsSystem {
@@ -37,18 +35,18 @@ public class ArcadePhysicsSystem extends BasePhysicsSystem {
         //
 
         // apply gravity as force
-        physical.force.y -= 9.8f;
+        physical.force.y -= 9.8f * physical.mass;
 
         // F = m*a, so a = F/m
-        Vector2 accel = physical.force.scl(1.0f/physical.mass);
-
-        physical.vel.scl(delta);
+        // we just reuse force for a here
+        physical.force.scl(1.0f/physical.mass);
 
         // v = v0 + a*t
         physical.force.scl(delta);
         physical.vel.add(physical.force);
 
         // x = x0 + v*t
+        // physical.vel.scl(delta);
         p.pos.add(physical.vel);
 
         //
@@ -82,7 +80,7 @@ public class ArcadePhysicsSystem extends BasePhysicsSystem {
         if (physical.isOnGround)
             physical.vel.scl(0.7f); // ground friction
         else
-            physical.vel.scl(0.85f); // air friction
+            physical.vel.scl(0.8f); // air friction
     }
 
     @Override

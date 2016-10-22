@@ -14,8 +14,8 @@ public class EntityFactory {
         int player_entity = world.create();
 
         world.edit(player_entity)
-                .add(new Sprited("sprites/bluetank-still.png"))
-                .add(new Position(x, y))
+                .add(new Sprited("sprites/bluetank-still.png", 1, 1))
+                .add(new Position(x, y, 2, 2))
                 .add(new Physical())
                 .add(new PlayerControlled());
 

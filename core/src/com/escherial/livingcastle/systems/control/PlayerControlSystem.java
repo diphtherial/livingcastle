@@ -20,8 +20,8 @@ public class PlayerControlSystem extends IteratingSystem implements InputProcess
     protected HashSet<Integer> pressed = new HashSet<Integer>();
     protected ComponentMapper<Physical> mPhysical;
     protected ComponentMapper<PlayerControlled> mPlayerControlled;
-    final float PLAYER_SPEED = 12.0f;
-    final float PLAYER_JUMP_THRUST = 300.0f;
+    final float PLAYER_MOVE_THRUST = 200.0f;
+    final float PLAYER_JUMP_THRUST = 3200.0f;
 
     public PlayerControlSystem() {
         super(Aspect.all(PlayerControlled.class, Physical.class));
@@ -44,7 +44,7 @@ public class PlayerControlSystem extends IteratingSystem implements InputProcess
                     physical.force.y += PLAYER_JUMP_THRUST;
                     physical.isOnGround = false;
                     con.state = JUMPING;
-                } else if (pressed.contains(Input.Keys.DOWN)) {
+                } else if (physical.isOnGround && pressed.contains(Input.Keys.DOWN)) {
                     // i guess we can duck?
                     con.state = DUCKING;
                 }
@@ -66,9 +66,9 @@ public class PlayerControlSystem extends IteratingSystem implements InputProcess
 
         // we can always move left and right
         if (pressed.contains(Input.Keys.LEFT)) {
-            physical.force.x -= PLAYER_SPEED;
+            physical.force.x -= PLAYER_MOVE_THRUST;
         } else if (pressed.contains(Input.Keys.RIGHT)) {
-            physical.force.x += PLAYER_SPEED;
+            physical.force.x += PLAYER_MOVE_THRUST;
         }
     }
 

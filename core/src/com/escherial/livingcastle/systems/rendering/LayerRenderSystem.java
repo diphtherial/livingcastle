@@ -22,7 +22,7 @@ public class LayerRenderSystem extends BaseSystem {
         this.level = curLevel;
         this.layers = layers;
 
-        renderer = (new OrthogonalTiledMapRenderer(curLevel.getMap(), batch) {
+        renderer = (new OrthogonalTiledMapRenderer(curLevel.getMap(), 2/16f, batch) {
             @Override
             protected void beginRender() {
                 AnimatedTiledMapTile.updateAnimationBaseTime();
