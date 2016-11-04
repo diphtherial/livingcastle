@@ -7,7 +7,11 @@ import com.badlogic.gdx.graphics.Texture;
 @Transient
 public class Sprited extends Component {
     public Texture img;
-    public int offx = 0, offy = 0;
+    public float offx = 0, offy = 0;
+    public enum Facing {
+        DEFAULT, LEFT, RIGHT, UP, DOWN, VELOCITY
+    }
+    public Facing facing = Facing.DEFAULT;
 
     public Sprited() {
         img = null;
@@ -17,9 +21,16 @@ public class Sprited extends Component {
         img = new Texture(s);
     }
 
-    public Sprited(String s, int offx, int offy) {
+    public Sprited(String s, float offx, float offy) {
         this.img = new Texture(s);
         this.offx = offx;
         this.offy = offy;
+    }
+
+    public Sprited(String s, float offx, float offy, Facing facing) {
+        this.img = new Texture(s);
+        this.offx = offx;
+        this.offy = offy;
+        this.facing = facing;
     }
 }

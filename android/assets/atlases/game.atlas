@@ -32,3 +32,97 @@ sprites/bluetank/tank-3
   orig: 16, 16
   offset: 0, 0
   index: -1
+
+game2.png
+size: 21,44
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+sprites/mark/climb/0
+  rotate: false
+  xy: 2, 23
+  size: 17, 19
+  orig: 17, 19
+  offset: 0, 0
+  index: -1
+sprites/mark/climb/1
+  rotate: false
+  xy: 2, 2
+  size: 17, 19
+  orig: 17, 19
+  offset: 0, 0
+  index: -1
+
+game3.png
+size: 60,23
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+sprites/mark/duck/0
+  rotate: false
+  xy: 2, 2
+  size: 18, 19
+  orig: 18, 19
+  offset: 0, 0
+  index: -1
+sprites/mark/duck/1
+  rotate: false
+  xy: 22, 2
+  size: 16, 19
+  orig: 16, 19
+  offset: 0, 0
+  index: -1
+sprites/mark/duck/2
+  rotate: false
+  xy: 40, 6
+  size: 18, 15
+  orig: 18, 15
+  offset: 0, 0
+  index: -1
+
+game4.png
+size: 21,23
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+sprites/mark/stand/0
+  rotate: false
+  xy: 2, 2
+  size: 17, 19
+  orig: 17, 19
+  offset: 0, 0
+  index: -1
+
+game5.png
+size: 40,44
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+sprites/mark/walk/0
+  rotate: false
+  xy: 2, 23
+  size: 18, 19
+  orig: 18, 19
+  offset: 0, 0
+  index: -1
+sprites/mark/walk/1
+  rotate: false
+  xy: 2, 2
+  size: 18, 19
+  orig: 18, 19
+  offset: 0, 0
+  index: -1
+sprites/mark/walk/2
+  rotate: false
+  xy: 22, 23
+  size: 16, 19
+  orig: 16, 19
+  offset: 0, 0
+  index: -1
+sprites/mark/walk/3
+  rotate: false
+  xy: 22, 2
+  size: 16, 19
+  orig: 16, 19
+  offset: 0, 0
+  index: -1

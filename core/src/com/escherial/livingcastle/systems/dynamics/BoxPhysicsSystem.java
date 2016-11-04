@@ -1,8 +1,9 @@
 package com.escherial.livingcastle.systems.dynamics;
 
 import com.artemis.Aspect;
+import com.artemis.BaseEntitySystem;
 import com.artemis.ComponentMapper;
-import com.artemis.systems.IteratingSystem;
+import com.artemis.utils.IntBag;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.maps.MapLayer;
@@ -12,18 +13,15 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
-import com.escherial.livingcastle.components.Box2Dified;
 import com.escherial.livingcastle.components.Physical;
 import com.escherial.livingcastle.components.Position;
 import com.escherial.livingcastle.structure.Constants;
 import com.escherial.livingcastle.structure.Level;
-import javafx.geometry.Pos;
-import javafx.util.Pair;
 
 /**
  * Created by Faisal on 10/21/2016.
  */
-public class BoxPhysicsSystem extends IteratingSystem {
+public class BoxPhysicsSystem extends BaseEntitySystem {
     // world-stepping dynamics
     protected static final float TIME_STEP = 1 / 60f;
     protected static final int VELOCITY_ITERATIONS = 6;
@@ -34,7 +32,6 @@ public class BoxPhysicsSystem extends IteratingSystem {
     // for adding moving entities
     ComponentMapper<Physical> mPhysical;
     ComponentMapper<Position> mPosition;
-    ComponentMapper<Box2Dified> mBox2dified;
 
     protected Box2DDebugRenderer debugRenderer;
     protected World physWorld;
@@ -46,7 +43,7 @@ public class BoxPhysicsSystem extends IteratingSystem {
         this.level = level;
 
         debugRenderer = new Box2DDebugRenderer();
-        physWorld = new World(new Vector2(0f, -9.8f), true);
+        physWorld = new World(new Vector2(0f, -20f), true);
 
         // adds the collision layer of the level as static collidable geometry
         addStaticTiles(level);
@@ -56,8 +53,12 @@ public class BoxPhysicsSystem extends IteratingSystem {
 
     @Override
     protected void initialize() {
-        physWorld.setContactListener(new FootContactListener(mPhysical, mBox2dified));
+        physWorld.setContactListener(new FootContactListener(mPhysical));
     }
+
+    // ===========================================================================
+    // === game entity -> box2d entity mapping maintenance
+    // ===========================================================================
 
     @Override
     protected void inserted(int entityId) {
@@ -73,16 +74,21 @@ public class BoxPhysicsSystem extends IteratingSystem {
         Body body = physWorld.createBody(bodyDef);
         body.setFixedRotation(true); // don't ever rotate entities
 
+        // apply initial velocity
+        body.setLinearVelocity(physical.vel);
+
         // Create a circle shape and set its radius
         PolygonShape bbox = new PolygonShape();
         bbox.setAsBox(p.width/2f, p.height/2f);
 
         // Create a fixture definition to apply our shape to
+        // FIXME: these values should ideally come from Physical
         FixtureDef fixtureDef = new FixtureDef();
+        fixtureDef.filter.groupIndex = (short) -physical.collideCategory.ordinal();
         fixtureDef.shape = bbox;
-        fixtureDef.density = 2.5f;
-        fixtureDef.friction = 0.2f;
-        fixtureDef.restitution = 0.0f; // don't bounce at all
+        fixtureDef.density = 5f;
+        fixtureDef.friction = 1.0f; // full floor friction
+        fixtureDef.restitution = 0.2f; // don't bounce at all
 
         // Create our fixture and attach it to the body
         Fixture fixture = body.createFixture(fixtureDef);
@@ -91,56 +97,83 @@ public class BoxPhysicsSystem extends IteratingSystem {
         // BodyDef and FixtureDef don't need disposing, but shapes do.
         bbox.dispose();
 
-        // we also need a foot sensor
-        PolygonShape feet = new PolygonShape();
-        feet.setAsBox(p.width/3f, p.height/8f, new Vector2(0, -p.height/2f), 0);
-        FixtureDef foot_fixture_def = new FixtureDef();
-        foot_fixture_def.shape = feet;
-        foot_fixture_def.isSensor = true;
-        Fixture foot_fixture = body.createFixture(foot_fixture_def);
-        foot_fixture.setUserData(entityId);
+        if (physical.tracksGround) {
+            // we also need a foot sensor
+            PolygonShape feet = new PolygonShape();
+            feet.setAsBox(p.width/2.1f, p.height/8f, new Vector2(0, -p.height/2f), 0);
+            FixtureDef foot_fixture_def = new FixtureDef();
+            foot_fixture_def.shape = feet;
+            foot_fixture_def.isSensor = true;
+            Fixture foot_fixture = body.createFixture(foot_fixture_def);
+            foot_fixture.setUserData(entityId);
+
+            feet.dispose();
+        }
 
         // assign the entity a physics representation that we can look up later
-        Box2Dified box2drep = new Box2Dified();
-        box2drep.body = body;
-        world.edit(entityId).add(box2drep);
+        // we should probably associate this with the entity at its creation (not here) and filter for it in this system
+        physical.body = body;
+
+        if (physical.isBullet) {
+            body.setGravityScale(0);
+            body.setBullet(true);
+        }
     }
 
     @Override
     protected void removed(int entityId) {
         // i suppose we should destroy the body?
-        Box2Dified box2drep = mBox2dified.get(entityId);
-        physWorld.destroyBody(box2drep.body);
+        Physical physical = mPhysical.get(entityId);
+        physWorld.destroyBody(physical.body);
     }
 
-    @Override
-    protected void begin() {
-    }
+    // ===========================================================================
+    // === core system processing
+    // ===========================================================================
 
     @Override
-    protected void process(int entityId) {
+    protected void processSystem() {
+        IntBag actives = subscription.getEntities();
+        int[] ids = actives.getData();
+
+        // run the initial process that applies inputs as forces
+        for (int i = 0, s = actives.size(); s > i; i++) {
+            processInputs(ids[i]);
+        }
+
+        // do all the physics
+        doPhysicsStep(Gdx.graphics.getDeltaTime());
+
+        // reconcile the engine's position and our game's position
+        for (int i = 0, s = actives.size(); s > i; i++) {
+            processResults(ids[i]);
+
+            // check if it's a bullet and if it's outside of the level
+            if (mPhysical.has(ids[i]) && mPosition.has(ids[i])) {
+                Physical phys = mPhysical.get(ids[i]);
+
+                // skip things that aren't bullets
+                if (!phys.isBullet)
+                    continue;
+
+                Position p = mPosition.get(ids[i]);
+
+                if (p.pos.len2() > level.mapWidth * level.mapPixelWidth) {
+                    world.delete(ids[i]);
+                }
+            }
+        }
+    }
+
+    protected void processInputs(int entityId) {
         // for each entity, apply forces, set positions from ground truth, etc.
         Physical physical = mPhysical.get(entityId);
         Position p = mPosition.get(entityId);
-        Box2Dified box2drep = mBox2dified.get(entityId);
-        Body myBody = box2drep.body;
+        Body myBody = physical.body;
 
         // apply forces from Physical to this body
         myBody.applyForceToCenter(physical.force, true);
         physical.force.set(0, 0); // and then clear out the force
-
-        // set the position according to the body's pos
-        // FIXME: we'll always lag one frame behind the actual pos, though :(
-        p.pos.set(myBody.getPosition());
-
-        // if we're out of view of the level, teleport us up right past view of the level and to the center
-        if (p.pos.y < -Constants.VIEWPORT_HEIGHT/2) {
-            p.pos.x = level.mapWidth/2f;
-            p.pos.y = level.mapHeight + Constants.VIEWPORT_HEIGHT/4f;
-            // and sync up the body and the camera so it doesn't have to make a super jump
-            myBody.setTransform(p.pos.x, p.pos.y, 0);
-            camera.position.set(p.pos.x, p.pos.y, 0);
-        }
     }
 
     private void doPhysicsStep(float deltaTime) {
@@ -154,19 +187,31 @@ public class BoxPhysicsSystem extends IteratingSystem {
         }
     }
 
-    @Override
-    protected void end() {
-        // do all the physics
-        doPhysicsStep(Gdx.graphics.getDeltaTime());
+    protected void processResults(int entityId) {
+        Position p = mPosition.get(entityId);
+        Physical physical = mPhysical.get(entityId);
+        Body myBody = physical.body;
+
+        // set the position according to the body's pos
+        p.pos.set(myBody.getPosition());
+
+        // if we're out of view of the level, teleport us up right past view of the level and to the center
+        if (p.pos.y < -Constants.VIEWPORT_HEIGHT/2) {
+            p.pos.x = level.mapWidth/2f;
+            p.pos.y = level.mapHeight + Constants.VIEWPORT_HEIGHT*2f;
+            // and sync up the body and the camera so it doesn't have to make a super jump
+            myBody.setTransform(p.pos.x, p.pos.y, 0);
+            camera.position.set(p.pos.x, p.pos.y, 0);
+        }
     }
 
     public void debugRender() {
         debugRenderer.render(physWorld, camera.combined);
     }
 
-    //
-    // level geometry creation stuff below
-    //
+    // ===========================================================================
+    // === level geometry creation stuff below
+    // ===========================================================================
 
     public void addStaticTiles(Level level) {
         // get the collision layer

@@ -1,94 +1,61 @@
 package com.escherial.livingcastle;
 
-import com.artemis.World;
-import com.artemis.WorldConfiguration;
-import com.artemis.WorldConfigurationBuilder;
-import com.badlogic.gdx.ApplicationAdapter;
+import com.badlogic.gdx.ApplicationListener;
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.assets.loaders.SkinLoader;
+import com.badlogic.gdx.controllers.Controllers;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.maps.tiled.objects.TiledMapTileMapObject;
-import com.escherial.livingcastle.structure.Constants;
-import com.escherial.livingcastle.structure.EntityFactory;
-import com.escherial.livingcastle.structure.Level;
-import com.escherial.livingcastle.systems.dynamics.ArcadePhysicsSystem;
-import com.escherial.livingcastle.systems.control.EntityObserverSystem;
-import com.escherial.livingcastle.systems.control.PlayerControlSystem;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.escherial.livingcastle.screens.GameScreen;
+import com.escherial.livingcastle.screens.LoadingScreen;
+import com.escherial.livingcastle.structure.input.KeyboardEventTranslator;
+import com.escherial.livingcastle.structure.input.XboxControllerTranslator;
 import com.escherial.livingcastle.systems.dynamics.BoxPhysicsSystem;
-import com.escherial.livingcastle.systems.rendering.BGLayerRenderSystem;
-import com.escherial.livingcastle.systems.rendering.EntityRenderSystem;
-import com.escherial.livingcastle.systems.rendering.FGLayerRenderSystem;
 
-public class LivingCastleMain extends ApplicationAdapter {
-    World world;
-    private SpriteBatch batch;
-    OrthographicCamera camera;
-    private BoxPhysicsSystem physicsSystem;
+public class LivingCastleMain extends Game implements ApplicationListener {
+    public SpriteBatch batch;
+    public BoxPhysicsSystem physicsSystem;
+    public KeyboardEventTranslator kbd_trans;
+    public XboxControllerTranslator xbox_trans;
+
+    public AssetManager assets;
+    public Skin skin;
+
+    public BitmapFont shinyfont;
+    public BitmapFont microfont;
 
     @Override
     public void create() {
-        // we have to load the level first in order to parameterize the level layer rendering systems properly
         batch = new SpriteBatch();
-        camera = new OrthographicCamera(Constants.VIEWPORT_WIDTH, Constants.VIEWPORT_HEIGHT);
-        Level curLevel = new Level("levels/intro.tmx");
+        assets = new AssetManager();
+        skin = new Skin(Gdx.files.internal("skins/uiskin.json"));
 
-        physicsSystem = new BoxPhysicsSystem(curLevel, camera);
-        PlayerControlSystem pcontrol = new PlayerControlSystem();
-        WorldConfiguration config = new WorldConfigurationBuilder()
-                .with(new EntityObserverSystem(camera), pcontrol, physicsSystem)
-                .with(
-                        new BGLayerRenderSystem(batch, camera, curLevel, curLevel.getLayers(true)),
-                        new EntityRenderSystem(batch, camera),
-                        new FGLayerRenderSystem(batch, camera, curLevel, curLevel.getLayers(false))
-                )
-                .build();
-        world = new World(config);
+        microfont = new BitmapFont(Gdx.files.internal("fonts/microlaser.fnt"));
+        shinyfont = new BitmapFont(Gdx.files.internal("fonts/lasersword.fnt"));
 
-        // scan the entity layer of the map looking for the player
-        TiledMapTileMapObject player = curLevel.getPlayer();
-        float px = 0, py = 0;
+        // create a keyboard input processor that we'll be using to translate key events into player control
+        KeyboardEventTranslator kbd_trans = new KeyboardEventTranslator();
+        Gdx.input.setInputProcessor(kbd_trans);
+        XboxControllerTranslator xbox_trans = new XboxControllerTranslator();
+        Controllers.addListener(xbox_trans);
 
-        if (player != null) {
-            // have to map from tiled pixel coordinates into world coordinates
-            px = player.getX() * Constants.TILE_PIXEL_MAPPING;
-            py = player.getY() * Constants.TILE_PIXEL_MAPPING;
-        }
+        this.kbd_trans = kbd_trans;
+        this.xbox_trans = xbox_trans;
 
-        // create the player and adds them to the world
-        EntityFactory.createPlayer(world, px, py);
+        this.setScreen(new LoadingScreen(this));
     }
 
     @Override
     public void render() {
-        Gdx.gl.glClearColor(32 / 255.0f, 20 / 255.0f, 41 / 255.0f, 1f);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        Gdx.gl.glEnable(GL20.GL_BLEND);
-        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-
-        camera.update();
-
-        batch.setProjectionMatrix(camera.combined);
-        batch.begin();
-
-        world.setDelta(Gdx.graphics.getDeltaTime());
-        world.process();
-
-        batch.end();
-
-        // have the physics system render whatever HUDy stuff it wants now
-        physicsSystem.debugRender();
+        super.render();
     }
-
-//    @Override
-//    public void resize(int width, int height) {
-//        camera.viewportHeight = (Constants.VIEWPORT_WIDTH / width) * height;
-//        camera.update();
-//    }
 
     @Override
     public void dispose() {
-        world.dispose();
         batch.dispose();
+        assets.dispose();
     }
 }

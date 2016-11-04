@@ -11,7 +11,7 @@ import java.util.Arrays;
 import static com.escherial.livingcastle.structure.Tools.range;
 
 public class Level {
-    public static final int TILEW = 2;
+    public static final int TILEW = 2; // in meters
 
     protected final TiledMap map;
     public final int mapWidth;
