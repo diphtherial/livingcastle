@@ -23,7 +23,9 @@ public class KeyboardEventTranslator extends InputEventTranslator implements Inp
     @Override
     public boolean keyDown(int keycode) {
         if (action_map.containsKey(keycode)) {
-            pressed.add(action_map.get(keycode));
+            Action action = action_map.get(keycode);
+            pressed.add(action);
+            notifyOnPress(action);
             return true;
         }
         return false;
@@ -32,7 +34,9 @@ public class KeyboardEventTranslator extends InputEventTranslator implements Inp
     @Override
     public boolean keyUp(int keycode) {
         if (action_map.containsKey(keycode)) {
-            pressed.remove(action_map.get(keycode));
+            Action action = action_map.get(keycode);
+            pressed.remove(action);
+            notifyOnRelease(action);
             return true;
         }
         return false;

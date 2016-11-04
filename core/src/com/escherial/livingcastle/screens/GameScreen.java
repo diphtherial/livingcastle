@@ -47,7 +47,7 @@ public class GameScreen extends ScreenAdapter {
         batch = game.batch;
 
         physicsSystem = new BoxPhysicsSystem(curLevel, camera);
-        PlayerControlSystem pcontrol = new PlayerControlSystem(new InputTranslatorMultiplexer(game.kbd_trans, game.xbox_trans));
+        PlayerControlSystem pcontrol = new PlayerControlSystem(game.muxed_trans);
         WorldConfiguration config = new WorldConfigurationBuilder()
                 .with(new EntityObserverSystem(camera), pcontrol, physicsSystem)
                 .with(

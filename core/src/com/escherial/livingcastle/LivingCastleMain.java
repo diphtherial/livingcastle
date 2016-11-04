@@ -11,6 +11,8 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.escherial.livingcastle.screens.GameScreen;
 import com.escherial.livingcastle.screens.LoadingScreen;
+import com.escherial.livingcastle.structure.input.InputEventTranslator;
+import com.escherial.livingcastle.structure.input.InputTranslatorMultiplexer;
 import com.escherial.livingcastle.structure.input.KeyboardEventTranslator;
 import com.escherial.livingcastle.structure.input.XboxControllerTranslator;
 import com.escherial.livingcastle.systems.dynamics.BoxPhysicsSystem;
@@ -26,6 +28,7 @@ public class LivingCastleMain extends Game implements ApplicationListener {
 
     public BitmapFont shinyfont;
     public BitmapFont microfont;
+    public InputEventTranslator muxed_trans;
 
     @Override
     public void create() {
@@ -44,6 +47,7 @@ public class LivingCastleMain extends Game implements ApplicationListener {
 
         this.kbd_trans = kbd_trans;
         this.xbox_trans = xbox_trans;
+        this.muxed_trans = new InputTranslatorMultiplexer(kbd_trans, xbox_trans);
 
         this.setScreen(new LoadingScreen(this));
     }

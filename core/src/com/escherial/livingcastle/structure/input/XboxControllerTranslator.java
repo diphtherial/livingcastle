@@ -51,7 +51,9 @@ public class XboxControllerTranslator extends InputEventTranslator implements Co
             System.out.println("Key pressed: " + buttonCode);
 
         if (action_map.containsKey(buttonCode)) {
-            pressed.add(action_map.get(buttonCode));
+            Action action = action_map.get(buttonCode);
+            pressed.add(action);
+            notifyOnPress(action);
             return true;
         }
         return false;
@@ -63,7 +65,9 @@ public class XboxControllerTranslator extends InputEventTranslator implements Co
             System.out.println("Key released: " + buttonCode);
 
         if (action_map.containsKey(buttonCode)) {
-            pressed.remove(action_map.get(buttonCode));
+            Action action = action_map.get(buttonCode);
+            pressed.remove(action);
+            notifyOnRelease(action);
             return true;
         }
         return false;

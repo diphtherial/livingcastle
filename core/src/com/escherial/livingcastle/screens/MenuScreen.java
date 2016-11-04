@@ -29,6 +29,8 @@ public class MenuScreen extends ScreenAdapter {
 
         stage.act(delta);
         stage.draw();
+
+        // FIXME: either poll for menu input or subscribe to events
     }
 
     @Override
